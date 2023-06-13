@@ -1,0 +1,35 @@
+{
+  "name": "@devops/webpack-i18n-plugin",
+  "version": "0.9.6",
+  "description": "webpack国际化插件",
+  "keywords": [
+    "vue",
+    "react",
+    "babel",
+    "i18n-plugin",
+    "i18n-loader",
+    "webpack-plugin",
+    "webpack",
+    "国际化"
+  ],
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "mr18",
+  "license": "ISC",
+  "dependencies": {
+    "@babel/cli": "^7.17.6",
+    "@babel/core": "^7.17.8",
+    "@babel/types": "^7.17.0",
+    "loader-utils": "^1.4.0",
+    "ora": "^1.4.0",
+    "webpack-sources": "^1.4.3",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "@devops/bk-magic-vue": "^2.4.16-alpha.2",
+    "react": "^18.0.0",
+    "typescript": "^4.6.3"
+  }
+}
