@@ -57,5 +57,31 @@ module.exports.pitch = function (remainingRequest) {
 
     return exportStr;
   }
+  if (query.type === "script") {
+    const genRequestScript = (loaders, request) => {
+      const seen = new Map();
+      const loaderStrings = [];
+  
+      loaders.forEach((loader) => {
+        const identifier = typeof loader === "string" ? loader : loader.path + loader.query;
+        const request = typeof loader === "string" ? loader : loader.request;
+        if (!seen.has(identifier)) {
+          seen.set(identifier, true);
+          loaderStrings.push(request);
+        }
+      });
+      const loadRequest = request.replace(/\\['"]+/g, '"').split(";")
+      const requestPaths = loadRequest.map((item) => {
+        const arr = item.replace(/\\['"]+/g, '"').split('"-!')
+        if(arr.length === 2) {
+          return arr[0] + loaderUtils.stringifyRequest(this, "-!" + [...loaderStrings, arr[1]].join("!").replace('"', ''));
+        }
+        return item
+      })
+      return requestPaths.join(';')
+    };
+
+    return genRequestScript([loaderPath], request)
+  }
   return request;
 };
