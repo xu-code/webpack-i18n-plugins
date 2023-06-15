@@ -1,6 +1,6 @@
 {
   "name": "@devops/webpack-i18n-plugin-plus",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "webpack国际化插件-升级版，支持script中的中文识别，支持自动翻译",
   "keywords": [
     "vue",
