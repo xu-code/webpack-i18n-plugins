@@ -1,4 +1,3 @@
-const { reject } = require('core-js/fn/promise');
 const translate = require('@devops/google-translate-api');
 const langeKey = {
   en_US: 'en'
