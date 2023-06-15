@@ -1,7 +1,7 @@
 {
-  "name": "@devops/webpack-i18n-plugin",
-  "version": "0.9.6",
-  "description": "webpack国际化插件",
+  "name": "@devops/webpack-i18n-plugin-plus",
+  "version": "1.0.0",
+  "description": "webpack国际化插件-升级版，支持script中的中文识别，支持自动翻译",
   "keywords": [
     "vue",
     "react",
@@ -22,6 +22,7 @@
     "@babel/cli": "^7.17.6",
     "@babel/core": "^7.17.8",
     "@babel/types": "^7.17.0",
+    "@devops/google-translate-api": "^1.0.1",
     "loader-utils": "^1.4.0",
     "ora": "^1.4.0",
     "webpack-sources": "^1.4.3",
