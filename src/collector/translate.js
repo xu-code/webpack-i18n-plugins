@@ -10,7 +10,7 @@ const autoTranslate = require('./autoTranslate')
  * @param options
  * @param oldKeysMap
  */
-module.exports = function translate(options, oldKeysMap, reslove) {
+module.exports = function translate(options, oldKeysMap, newTextKeyArr, reslove) {
   let tranKeys = Object.keys(options.translation || {});
   if (tranKeys && tranKeys.length) {
     tranKeys.forEach((tranKey) => {
@@ -94,7 +94,7 @@ module.exports = function translate(options, oldKeysMap, reslove) {
 
         let outputXlsxPath = path.resolve(options.i18nDir, "./" + tranKey + (isTranslate? "/index.xlsx" : "/待翻译.xlsx"));
         isTranslate && utils.deleteFile(path.resolve(options.i18nDir, "./" + tranKey + "/待翻译.xlsx"));
-        if (xlsxData.length) {
+        if (isTranslate || newTextKeyArr.length) {
           let buf = utils.genXLSXData(xlsxData);
           utils.writeFile(outputXlsxPath, buf);
           !isTranslate && utils.setUndoCount(tranKey, xlsxData.length);
