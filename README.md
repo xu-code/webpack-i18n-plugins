@@ -1,4 +1,4 @@
-# 中文国际化插件，适用于 vue，react
+# 中文国际化插件，适用于 vue
 
 ### [DEMO](./demo)
 
@@ -7,84 +7,80 @@
 ```
 npm install @devops/webpack-i18n-plugin-plus -D
 ```
+```
+yarn add @devops/webpack-i18n-plugin-plus -D
+```
 
-为了兼容 vue 和 react，需要同时配置 webpack plugins 和 babel plugins
-
+在项目目录下新建文件夹 ```i18n```，添加对应的语言包文件夹
+例如：```i18n/en_US/index.xlsx```；这个文件在配置中会用到，见以下代码：
 ### webpack plugins 配置
 
 ```
 // webpack.config.js
-const i18nPlugin = require("webpack-i18n-plugin");
+const WebpackI18nPlugin = require('@devops/webpack-i18n-plugin-plus')
+const i18nConfig = {
+    i18nDir: path.resolve(__dirname, './i18n'), // 国际化配置输出目录
+    translation: {
+        en_US: [path.resolve(__dirname, './i18n/en_US/index.xlsx')] // 对应的翻译文件
+    }
+}
 plugins: [
   ...
-  new i18nPlugin(i18nConfig),
+  new WebpackI18nPlugin(i18nConfig),
   ...
 ]
 ```
+### vue.config.js 配置
 ```
-// vue.config.js
-chainWebpack: (config) => {
-  config
-    .plugin('i18n')
-    .use('webpack-i18n-plugin')
-    .tap(() => {
-      return [i18nConfig];
-    });
+const WebpackI18nPlugin = require('@devops/webpack-i18n-plugin-plus')
+const i18nConfig = {
+    i18nDir: path.resolve(__dirname, './i18n'), // 国际化配置输出目录
+    translation: {
+        en_US: [path.resolve(__dirname, './i18n/en_US/index.xlsx')] // 对应的翻译文件
+    }
 }
+module.exports = {
+    configureWebpack: {
+        plugins: [
+            new WebpackI18nPlugin(i18nConfig)
+        ]
+    }
+}
+
 ```
 
-### babel plugins 配置
 
-```
-// .babelrc | babel.config.js
-
-plugins:[
-  ...
-  "webpack-i18n-plugin/babel"
-]
-```
-
-### 切换语言
+### 使用方法|切换语言
+> 项目启动后会在对应的语言包文件夹下生成```index.js``` 文件，这个文件就是对应语言的语言包
 
 确保语言包最先加载到页面中，中文无需引入语言包
-
+最好是在```main.js```中进行引入使用
+eg:
 ```
-// 页面入口 app.js
-const en_US = require("./i18n/en_US"); // 对应语言包
-window.$i8n.locale(en_US); // $i18n为全局变量
+// 页面入口 main.js
+import en_US from '../i18n/en_US/index.js'
+import zh_CN from '../i18n/zh_CN/index.js'
+const langMap = {
+  'en': en_US,
+  'zhcn': zh_CN
+}
+const lang = localStorage.getItem('lang')
+window.$i8n.locale(langMap[lang])
 // other code
-```
-
-### 插件配置项 `Object`
-
-| 名称        | 说明                                                            | 类型      | 必选 | 默认值 |
-| ----------- | --------------------------------------------------------------- | --------- | ---- | ------ |
-| i18nDir     | 国际化输出目录                                                  | `String`  | 否   | `i18n` |
-| makefile    | 是否输出国际化内容<br/>国际化内容不发生变化时，可设置为 `false` | `Boolean` | 否   | `true`   |
-| translation | 对应语言的翻译内容                                                  | `Object`  | 是   | -      |
-
-示例
 
 ```
-const i18nConfig = {
-  translation: {
-    en_US: [path.resolve(__dirname, "翻译文件.xlsx")], //en_US语言包
-    ja_JP:'',
-    ...
-  },
-};
+切换语言我们只需要修改```localStorage```中对应的值，并调用浏览器刷新即可
+```
+window.location.reload()
 ```
 
-[翻译文件格式参考](https://github.com/mr18/webpack-i18n-plugin/blob/master/demo/react/output/en_US/%E7%BF%BB%E8%AF%91%E5%86%85%E5%AE%B9.xlsx)
+
 ### 备注
 
 1. 编译结果暴露 `$i8n` `$$i8n` 全局方法
-2. 编译后，关注`build`输出日志，直到无待翻译数据
+2. 编译后，请关注 `build`输出日志，直到无待翻译数据
 3. 如果语言包无法更新，清理node_modules/.cache后重新编译
-
-欢迎fork，提交issues.
-
-
+4. 本插件集成了谷歌翻译，结果可能不准，也可能调用失败。如果对翻译结果不满意或者未生成对应的翻译结果，请前往```i18n/``` 下对应语言包的```index.xlsx```对翻译结果进行修改。
 
 
 ### License

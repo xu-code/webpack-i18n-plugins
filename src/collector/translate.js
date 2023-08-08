@@ -31,7 +31,7 @@ module.exports = function translate(options, oldKeysMap, newTextKeyArr, reslove)
               let sheetData = XLSX.utils.sheet_to_json(workbook.Sheets[name]);
               let tempObj = {};
               sheetData.forEach((item) => {
-                tempObj[item.key] = String(item.text || "").replace(/(<\/?)\s*([a-zA-z])+\s*(>)/g, "$1$2$3"); //移除标签空格
+                tempObj[item.key] = String(item.text || "").replace(/(<\/?)\s*([a-zA-z]+)\s*(>)/g, "$1$2$3"); //移除标签空格
               });
               Object.assign(translateObj, tempObj);
             });
@@ -81,18 +81,26 @@ module.exports = function translate(options, oldKeysMap, newTextKeyArr, reslove)
         myOra.fail('翻译失败，请尝试手动翻译')
         reslove()
       })
+      /**
+       * 判断翻译是否成功，从而决定应该写入哪个excel表
+       * @param {boolean} isTranslate  
+       */
       function writeTranslateFile(isTranslate) {
+        // 对应翻译结果写入（语言包） /tranKey/index.js
         let outputJsPath = path.resolve(options.i18nDir, "./" + tranKey + "/index.js");
         let oldLocaleResult;
         if (fs.existsSync(outputJsPath)) {
           oldLocaleResult = require(outputJsPath);
         }
+        // 内容有变化则重新写入
         if (!oldLocaleResult || JSON.stringify(oldLocaleResult) !== JSON.stringify(localeResult)) {
           let localeCode = "module.exports = " + JSON.stringify(localeResult);
           utils.writeFile(outputJsPath, localeCode);
         }
 
+        // 对应xlsx写入
         let outputXlsxPath = path.resolve(options.i18nDir, "./" + tranKey + (isTranslate? "/index.xlsx" : "/待翻译.xlsx"));
+        // 翻译成功，删除待翻译这个文件
         isTranslate && utils.deleteFile(path.resolve(options.i18nDir, "./" + tranKey + "/待翻译.xlsx"));
         if (isTranslate || newTextKeyArr.length) {
           let buf = utils.genXLSXData(xlsxData);

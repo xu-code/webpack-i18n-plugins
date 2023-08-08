@@ -45,6 +45,12 @@ class i18nPlugin {
         prePitcher = item;
       }
     });
+    rules.unshift({
+      test: /\.js$/,
+      exclude: /node_modules/,
+      include: /src/,
+      loader: path.resolve(__dirname, './loader/index.js')
+    })
     if (prePitcher) {
       let i18nPitcher = {
         ...prePitcher,
