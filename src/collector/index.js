@@ -43,8 +43,10 @@ function genConfigFile(opt) {
       sortKeysMap[key] = i18nMap[key];
     });
   
-    let localeCode = "module.exports = " + JSON.stringify(sortKeysMap);
-    utils.writeFile(path.resolve(options.i18nDir, "./zh_CN/index.js"), localeCode);
+    if (JSON.stringify(sortKeysMap) !== JSON.stringify(oldKeysMap)) {
+      let localeCode = "module.exports = " + JSON.stringify(sortKeysMap);
+      utils.writeFile(path.resolve(options.i18nDir, "./zh_CN/index.js"), localeCode);
+    }
   
     translate(options,sortKeysMap,newTextKeyArr, reslove);
   })
