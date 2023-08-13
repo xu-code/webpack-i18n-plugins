@@ -3,7 +3,7 @@ const path = require('path');
 const XLSX = require('xlsx');
 const ora = require('ora');
 const myOra = ora();
-
+const fileObj = {}
 /**
  *
  * @param filePath
@@ -44,6 +44,10 @@ module.exports.readCodeText = readCodeText;
  * @param code
  */
 module.exports.writeFile = (filePath, code) => {
+  if (fileObj[filePath] === JSON.stringify(code)) {
+    return false
+  }
+  fileObj[filePath] = JSON.stringify(code)
   filePath = path.resolve(filePath);
   let dirname = path.dirname(filePath);
   let filePathArr = dirname.split(path.sep);
