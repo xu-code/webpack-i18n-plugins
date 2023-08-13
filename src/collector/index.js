@@ -47,8 +47,7 @@ function genConfigFile(opt) {
       let localeCode = "module.exports = " + JSON.stringify(sortKeysMap);
       utils.writeFile(path.resolve(options.i18nDir, "./zh_CN/index.js"), localeCode);
     }
-  
-    translate(options,sortKeysMap,newTextKeyArr, reslove);
+    translate(options, sortKeysMap, reslove);
   })
   
 }

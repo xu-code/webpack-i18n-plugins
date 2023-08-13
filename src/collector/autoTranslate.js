@@ -50,6 +50,9 @@ const googleTranslator = (text) => translate(
 // 定义翻译方法
 module.exports = function translateRun(list) {
     return new Promise(async (reslove, reject) => {
+        if(!list.length) {
+            reslove(list)
+        }
         try {
             let chunkValuesLength = 0
             let chunk = []

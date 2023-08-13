@@ -4,13 +4,14 @@ const path = require("path");
 const ora = require("ora");
 const myOra = ora();
 const fs = require("fs");
+const fileObjCache = {}
 const autoTranslate = require('./autoTranslate')
 /**
  *
  * @param options
  * @param oldKeysMap
  */
-module.exports = function translate(options, oldKeysMap, newTextKeyArr, reslove) {
+module.exports = function translate(options, oldKeysMap, reslove) {
   let tranKeys = Object.keys(options.translation || {});
   if (tranKeys && tranKeys.length) {
     tranKeys.forEach((tranKey) => {
@@ -63,6 +64,7 @@ module.exports = function translate(options, oldKeysMap, newTextKeyArr, reslove)
         }
       });
       if (!xlsxData.length) {
+        myOra.succeed('太棒啦！没有需要翻译的文本内容!!')
         writeTranslateFile(false)
         reslove()
         return
@@ -78,7 +80,8 @@ module.exports = function translate(options, oldKeysMap, newTextKeyArr, reslove)
         reslove()
       }).catch(err=> {
         writeTranslateFile(false)
-        myOra.fail('翻译失败，请尝试手动翻译')
+        myOra.fail('翻译失败，请尝试在对应目录下的index.xlsx中对未翻译文本手动翻译！')
+        myOra.fail(err.message)
         reslove()
       })
       /**
@@ -92,22 +95,35 @@ module.exports = function translate(options, oldKeysMap, newTextKeyArr, reslove)
         if (fs.existsSync(outputJsPath)) {
           oldLocaleResult = require(outputJsPath);
         }
+        const indexJSData = JSON.stringify(localeResult)
         // 内容有变化则重新写入
-        if (!oldLocaleResult || JSON.stringify(oldLocaleResult) !== JSON.stringify(localeResult)) {
-          let localeCode = "module.exports = " + JSON.stringify(localeResult);
+        if (fileObjCache[outputJsPath] !== indexJSData) {
+          fileObjCache[outputJsPath] = indexJSData
+          let localeCode = "module.exports = " + indexJSData;
           utils.writeFile(outputJsPath, localeCode);
         }
-
-        // 对应xlsx写入
-        let outputXlsxPath = path.resolve(options.i18nDir, "./" + tranKey + (isTranslate? "/index.xlsx" : "/待翻译.xlsx"));
-        // 翻译成功，删除待翻译这个文件
-        isTranslate && utils.deleteFile(path.resolve(options.i18nDir, "./" + tranKey + "/待翻译.xlsx"));
-        if (isTranslate || newTextKeyArr.length) {
-          let buf = utils.genXLSXData(xlsxData);
-          utils.writeFile(outputXlsxPath, buf);
-          !isTranslate && utils.setUndoCount(tranKey, xlsxData.length);
+        // 翻译成功写入xlsx，翻译失败写入待翻译文件；
+        const indexXlsx = path.resolve(options.i18nDir, "./" + tranKey + '/index.xlsx')
+        const toBeTranslate = path.resolve(options.i18nDir, "./" + tranKey + '/待翻译.xlsx')
+        const buf = utils.genXLSXData(xlsxData);
+        if(isTranslate) {
+          // 翻译成功，删除待翻译文件
+          utils.deleteFile(toBeTranslate)
+          // 写入内容到index.xlsx
+          utils.writeFile(indexXlsx, buf);
         } else {
-          utils.deleteFile(outputXlsxPath);
+          if (fileObjCache[toBeTranslate] !== JSON.stringify(xlsxData)) {
+            fileObjCache[toBeTranslate] = JSON.stringify(xlsxData)
+            utils.writeFile(toBeTranslate, buf);
+          }
+          // 写入内容到index.xlsx
+          const indexData = [...isTranslated, ...xlsxData]
+          if (fileObjCache[indexXlsx] !== JSON.stringify(indexData)) {
+            fileObjCache[indexXlsx] = JSON.stringify(indexData)
+            const indexBuf = utils.genXLSXData(indexData);
+            utils.writeFile(indexXlsx, indexBuf);
+          }
+          utils.setUndoCount(tranKey, xlsxData.length);
         }
       }
     });

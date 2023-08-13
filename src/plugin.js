@@ -45,7 +45,7 @@ class i18nPlugin {
         prePitcher = item;
       }
     });
-    rules.unshift({
+    rules.push({
       test: /\.js$/,
       exclude: /node_modules/,
       include: /src/,
