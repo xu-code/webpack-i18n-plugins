@@ -46,7 +46,7 @@ class i18nPlugin {
       }
     });
     rules.push({
-      test: /\.js$/,
+      test: /\.(js|ts)$/,
       exclude: /node_modules/,
       include: /src/,
       loader: path.resolve(__dirname, './loader/index.js')
