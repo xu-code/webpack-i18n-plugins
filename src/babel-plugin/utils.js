@@ -2,7 +2,9 @@ const types = require("@babel/types");
 const ora = require("ora");
 const myOra = ora();
 const OPTIONS = require("./options");
-
+let nameSpace = ''
+// 设置命名空间
+module.exports.setNameSpace = (val) => nameSpace = val
 /**
  * hash函数，生成唯一的id
  * @param value
@@ -168,8 +170,8 @@ module.exports.genAIExpression = function (value, isExpression, key) {
         rawValue: value,
       },
     });
-    return types.callExpression(types.identifier(OPTIONS.$i8n), [types.stringLiteral(key), valueExp]);
+    return types.callExpression(types.identifier(OPTIONS.$i8n), [types.stringLiteral(key), valueExp, types.stringLiteral(nameSpace)]);
   } else {
-    return `${OPTIONS.$i8n}('${key}','${valStr}')`;
+    return `${OPTIONS.$i8n}('${key}','${valStr}','${nameSpace}')`;
   }
 };

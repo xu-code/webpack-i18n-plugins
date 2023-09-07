@@ -1,15 +1,15 @@
-# 中文国际化插件，适用于 vue
+# 中文国际化插件，适用于 vue，支持ts
 
 ### [DEMO](./demo)
 
 ### 安装
 
 ```
-npm install @devops/webpack-i18n-plugin-plus -D
+npm install @devops/webpack-i18n-plugin-plus @babel/plugin-transform-typescript -D
 ```
 
 ```
-yarn add @devops/webpack-i18n-plugin-plus -D
+yarn add @devops/webpack-i18n-plugin-plus @babel/plugin-transform-typescript -D
 ```
 
 在项目目录下新建文件夹 ``i18n``，添加对应的语言包文件夹
@@ -90,9 +90,35 @@ window.$i8n.locale(langMap[lang])
 window.location.reload()
 ```
 
+### 命名空间
+
+> 如果项目不是单独部署（作为插件/组件被其他项目引入）；为避免语言包冲突，需要定义命名空间。
+> 在使用上面，仅需要完成两个步骤：
+
+1. 在webpack配置中加入命名空间的key值：
+   ```
+   const i18nConfig = {
+       i18nDir: path.resolve(__dirname, './i18n'), // 国际化配置输出目录
+       translation: {
+           en_US: [path.resolve(__dirname, './i18n/en_US/index.xlsx')] // 对应的翻译文件
+       },
+       nameSpace: 'vueProject1'
+   }
+   ```
+2. 在注入语言包时，传入命名空间的key值（需与步骤1的key值保持一致）
+   ```
+   const langMap = {
+     'en': en_US,
+     'zhcn': zh_CN
+   }
+   const lang = localStorage.getItem('lang') || 'en'
+   window.$i8n.locale(langMap[lang], 'vueProject1')
+   ```
+
+
 ### 备注
 
-1. 编译结果暴露 `$i8n` `$$i8n` 全局方法
+1. 编译结果暴露 `$i8n` `$$i8n` 全局方法；（使用  `$$i8n` 包裹可以用于跳过某些字段的翻译）
 2. 编译后，请关注 `build`输出日志，直到无待翻译数据
 3. 如果语言包无法更新，清理node_modules/.cache后重新编译
 4. 本插件集成了谷歌翻译，结果可能不准，也可能调用失败。如果对翻译结果不满意或者未生成对应的翻译结果，请前往 ``i18n/`` 下对应语言包的 ``index.xlsx``对翻译结果进行修改。
