@@ -3,10 +3,12 @@ const collector = require("./collector");
 const i18nUtils = require("./babel-plugin/utils");
 const ConcatSource = require("webpack-sources").ConcatSource;
 // const polyfilePath = require.resolve("./collector/polyfill.js");
+const setNameSpace = require("./babel-plugin/utils").setNameSpace;
 const polyfilePath = path.resolve(__dirname, "./collector/polyfill.mjs");
 class i18nPlugin {
   constructor(config) {
     this.i18nConfig = config;
+    setNameSpace(config.nameSpace)
   }
   apply(compiler) {
     

@@ -1,23 +1,23 @@
-# 中文国际化插件，适用于 vue，支持ts
+# webpack-i18n-plugin-plus
 
-### [DEMO](./demo)
+# 中文国际化插件，适用于 vue，支持ts
 
 ### 安装
 
-```
+```bash
 npm install @devops/webpack-i18n-plugin-plus @babel/plugin-transform-typescript -D
 ```
 
-```
-yarn add @devops/webpack-i18n-plugin-plus @babel/plugin-transform-typescript -D
+```bash
+yarn add @devops/webpack-i18n-plugin-plus @babel/plugin-transform-typescript -D装后无法正常使用，可能是缺少了依赖，需要再安装一个依赖
 ```
 
-在项目目录下新建文件夹 ``i18n``，添加对应的语言包文件夹
-例如：``i18n/en_US/index.xlsx``；这个文件在配置中会用到，见以下代码：
+在项目目录下新建文件夹 `i18n`，添加对应的语言包文件夹（注：一个工程对应一个目录，不可共用，否则会相互覆盖
+例如：`i18n/en_US/index.xlsx`；这个文件在配置中会用到，见以下代码：
 
 ### webpack plugins 配置
 
-```
+```jsx
 // webpack.config.js
 const WebpackI18nPlugin = require('@devops/webpack-i18n-plugin-plus')
 const i18nConfig = {
@@ -34,17 +34,19 @@ plugins: [
 ```
 
 > 注：如果出现编译死循环（未出现则忽略），需要在webpack配置中添加配置忽略对输出目录的热更新
+> 
 
-```
+```jsx
 
 config.devServer.watchOptions = {
         ignored: /i18n/
 }
+
 ```
 
 ### vue.config.js 配置
 
-```
+```jsx
 const WebpackI18nPlugin = require('@devops/webpack-i18n-plugin-plus')
 const i18nConfig = {
     i18nDir: path.resolve(__dirname, './i18n'), // 国际化配置输出目录
@@ -59,19 +61,18 @@ module.exports = {
         ]
     }
 }
-
 ```
 
 ### 使用方法|切换语言
 
-> 项目启动后会在对应的语言包文件夹下生成 ``index.js`` 文件，这个文件就是对应语言的语言包
+> 项目启动后会在对应的语言包文件夹下生成 index.js 文件，这个文件就是对应语言的语言包
+> 
 
-确保语言包最先加载到页面中，中文无需引入语言包
-最好是在 ``main.js``中进行引入使用
-eg:
+确保语言包最先被加载到，中文无需引入语言包
+**最佳实践：**
 
-```
-// 页面入口 main.js
+```jsx
+// i18n.js
 import en_US from '../i18n/en_US/index.js'
 import zh_CN from '../i18n/zh_CN/index.js'
 const langMap = {
@@ -84,44 +85,105 @@ window.$i8n.locale(langMap[lang])
 
 ```
 
-切换语言我们只需要修改 ``localStorage``中对应的值，并调用浏览器刷新即可
+在main.js中的 **第一行** 将上面的js文件引入
 
+```jsx
+// main.js
+import './i18n.js'
 ```
+
+如果需要切换语言我们只需要修改 `localStorage`中对应的值，并调用浏览器刷新即可
+
+```jsx
 window.location.reload()
 ```
 
 ### 命名空间
 
 > 如果项目不是单独部署（作为插件/组件被其他项目引入）；为避免语言包冲突，需要定义命名空间。
-> 在使用上面，仅需要完成两个步骤：
+> 
+
+**在使用上面，仅需要完成两个步骤：**
 
 1. 在webpack配置中加入命名空间的key值：
-   ```
-   const i18nConfig = {
-       i18nDir: path.resolve(__dirname, './i18n'), // 国际化配置输出目录
-       translation: {
-           en_US: [path.resolve(__dirname, './i18n/en_US/index.xlsx')] // 对应的翻译文件
-       },
-       nameSpace: 'vueProject1'
-   }
-   ```
+    
+    ```jsx
+    const i18nConfig = {
+        i18nDir: path.resolve(__dirname, './i18n'), // 国际化配置输出目录
+        translation: {
+            en_US: [path.resolve(__dirname, './i18n/en_US/index.xlsx')] // 对应的翻译文件
+        },
+        nameSpace: 'vueProject1'
+    }
+    
+    ```
+    
 2. 在注入语言包时，传入命名空间的key值（需与步骤1的key值保持一致）
-   ```
-   const langMap = {
-     'en': en_US,
-     'zhcn': zh_CN
-   }
-   const lang = localStorage.getItem('lang') || 'en'
-   window.$i8n.locale(langMap[lang], 'vueProject1')
-   ```
+    
+    ```jsx
+    const langMap = {
+      'en': en_US,
+      'zhcn': zh_CN
+    }
+    const lang = localStorage.getItem('lang') || 'en'
+    window.$i8n.locale(langMap[lang], 'vueProject1')
+    
+    ```
+    
 
+### 方法
+
+`window.$i8n` 当项目中有相同的中文需要翻译成不同的单词时，提供的自定义翻译解决方法
+
+- **类型：** `(key: string, val: string, nameSpace: string) => string`
+- **参数：**
+    - key: 关键字对应的key值
+    - val: 若语言包中未能取到对应的key值
+    - nameSpace: 命名空间，若项目中使用了命名空间，则该参数需要传递
+- **示例：**
+
+假设项目中出现两处 **“需求” ,** 需要分别翻译为demand、DEMAND；则其中有一个可以借助插件进行自动翻译，另一个需要自己定义需要翻译的内容，我们以DEMAND为例：
+
+```jsx
+// 在项目下定义对应的语言JSON，如
+const customLangMap = {
+	'en': {
+			'需求': 'DEMAND'
+	},
+  'zhcn': {
+			'需求': '需求'
+	}
+}
+// 在注入语言包时，将对应的语言包进行解构
+const langMap = {
+  'en': en_US,
+  'zhcn': zh_CN
+}
+const lang = localStorage.getItem('lang') || 'en'
+window.$i8n.locale({...langMap[lang], ...customLangMap[lang]})
+```
+
+```jsx
+// 在需要自定义翻译的地方使用$i18n进行包裹
+$i8n('需求', '需求', nameSpace) // 对应语言下：需求/DEMAND
+```
+
+`window.$$i8n` 当项目中有不需要进行国际化的中文时，可以通过该方法进行跳过
+
+- **类型：** `(value: string) => value: string`
+- **参数：**
+    - value：原始文案
+- **示例：**
+
+```jsx
+$$i8n('需求') // 需求
+```
 
 ### 备注
 
-1. 编译结果暴露 `$i8n` `$$i8n` 全局方法；（使用  `$$i8n` 包裹可以用于跳过某些字段的翻译）
-2. 编译后，请关注 `build`输出日志，直到无待翻译数据
-3. 如果语言包无法更新，清理node_modules/.cache后重新编译
-4. 本插件集成了谷歌翻译，结果可能不准，也可能调用失败。如果对翻译结果不满意或者未生成对应的翻译结果，请前往 ``i18n/`` 下对应语言包的 ``index.xlsx``对翻译结果进行修改。
+1. 编译后，可以关注 **终端** 输出日志，查看翻译情况；
+2. 本插件集成了谷歌翻译，翻译结果准确性有限，也可能调用失败（本地科学上网端口号指向7890，翻译的成功率更高）。
+3. 如果对翻译结果不满意或者未生成对应的翻译结果，可前往 `i18n/` 下对应语言包的 `index.xlsx`对翻译结果进行修改。
 
 ### License
 
