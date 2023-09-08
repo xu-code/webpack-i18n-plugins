@@ -9,7 +9,7 @@ npm install @devops/webpack-i18n-plugin-plus @babel/plugin-transform-typescript 
 ```
 
 ```bash
-yarn add @devops/webpack-i18n-plugin-plus @babel/plugin-transform-typescript -D装后无法正常使用，可能是缺少了依赖，需要再安装一个依赖
+yarn add @devops/webpack-i18n-plugin-plus @babel/plugin-transform-typescript -D
 ```
 
 在项目目录下新建文件夹 `i18n`，添加对应的语言包文件夹（注：一个工程对应一个目录，不可共用，否则会相互覆盖
@@ -34,7 +34,6 @@ plugins: [
 ```
 
 > 注：如果出现编译死循环（未出现则忽略），需要在webpack配置中添加配置忽略对输出目录的热更新
-> 
 
 ```jsx
 
@@ -66,7 +65,6 @@ module.exports = {
 ### 使用方法|切换语言
 
 > 项目启动后会在对应的语言包文件夹下生成 index.js 文件，这个文件就是对应语言的语言包
-> 
 
 确保语言包最先被加载到，中文无需引入语言包
 **最佳实践：**
@@ -101,35 +99,32 @@ window.location.reload()
 ### 命名空间
 
 > 如果项目不是单独部署（作为插件/组件被其他项目引入）；为避免语言包冲突，需要定义命名空间。
-> 
 
 **在使用上面，仅需要完成两个步骤：**
 
 1. 在webpack配置中加入命名空间的key值：
-    
-    ```jsx
-    const i18nConfig = {
-        i18nDir: path.resolve(__dirname, './i18n'), // 国际化配置输出目录
-        translation: {
-            en_US: [path.resolve(__dirname, './i18n/en_US/index.xlsx')] // 对应的翻译文件
-        },
-        nameSpace: 'vueProject1'
-    }
-    
-    ```
-    
+
+   ```jsx
+   const i18nConfig = {
+       i18nDir: path.resolve(__dirname, './i18n'), // 国际化配置输出目录
+       translation: {
+           en_US: [path.resolve(__dirname, './i18n/en_US/index.xlsx')] // 对应的翻译文件
+       },
+       nameSpace: 'vueProject1'
+   }
+
+   ```
 2. 在注入语言包时，传入命名空间的key值（需与步骤1的key值保持一致）
-    
-    ```jsx
-    const langMap = {
-      'en': en_US,
-      'zhcn': zh_CN
-    }
-    const lang = localStorage.getItem('lang') || 'en'
-    window.$i8n.locale(langMap[lang], 'vueProject1')
-    
-    ```
-    
+
+   ```jsx
+   const langMap = {
+     'en': en_US,
+     'zhcn': zh_CN
+   }
+   const lang = localStorage.getItem('lang') || 'en'
+   window.$i8n.locale(langMap[lang], 'vueProject1')
+
+   ```
 
 ### 方法
 
@@ -137,9 +132,9 @@ window.location.reload()
 
 - **类型：** `(key: string, val: string, nameSpace: string) => string`
 - **参数：**
-    - key: 关键字对应的key值
-    - val: 若语言包中未能取到对应的key值
-    - nameSpace: 命名空间，若项目中使用了命名空间，则该参数需要传递
+  - key: 关键字对应的key值
+  - val: 若语言包中未能取到对应的key值
+  - nameSpace: 命名空间，若项目中使用了命名空间，则该参数需要传递
 - **示例：**
 
 假设项目中出现两处 **“需求” ,** 需要分别翻译为demand、DEMAND；则其中有一个可以借助插件进行自动翻译，另一个需要自己定义需要翻译的内容，我们以DEMAND为例：
@@ -148,10 +143,10 @@ window.location.reload()
 // 在项目下定义对应的语言JSON，如
 const customLangMap = {
 	'en': {
-			'需求': 'DEMAND'
+        '需求': 'DEMAND'
 	},
-  'zhcn': {
-			'需求': '需求'
+    'zhcn': {
+        '需求': '需求'
 	}
 }
 // 在注入语言包时，将对应的语言包进行解构
@@ -172,7 +167,7 @@ $i8n('需求', '需求', nameSpace) // 对应语言下：需求/DEMAND
 
 - **类型：** `(value: string) => value: string`
 - **参数：**
-    - value：原始文案
+  - value：原始文案
 - **示例：**
 
 ```jsx
