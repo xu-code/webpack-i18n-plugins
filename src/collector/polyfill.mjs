@@ -15,6 +15,6 @@
       $i8n.package = locale || {};
     }
   };
-  window.$i8n = $i8n;
+  window.$i8n = window.$i8n || $i8n;
   window.$$i8n = $$i8n;
 })();

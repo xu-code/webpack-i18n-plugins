@@ -4,7 +4,7 @@ const myOra = ora();
 const OPTIONS = require("./options");
 let nameSpace = ''
 // 设置命名空间
-module.exports.setNameSpace = (val) => nameSpace = val
+module.exports.setNameSpace = (val) => nameSpace = val || ''
 /**
  * hash函数，生成唯一的id
  * @param value
@@ -133,11 +133,11 @@ module.exports.getCallExpressionName = function (node) {
 
   // 多级命名空间,如：xxx.xxx.xxx
   function callObjName(callObj, name) {
-    name += "." + callObj.property.name;
+    name = callObj.property.name + (name ? "." : '') + name;
     if (types.isMemberExpression(callObj.object)) {
       return callObjName(callObj.object, name);
     }
-    name = callObj.object.name + name;
+    name = (callObj.object.name ? callObj.object.name + '.' : '') + name;
     return name;
   }
 
