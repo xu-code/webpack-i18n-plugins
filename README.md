@@ -6,10 +6,12 @@
 
 ```bash
 npm install @devops/webpack-i18n-plugin-plus @babel/plugin-transform-typescript -D
+
 ```
 
 ```bash
 yarn add @devops/webpack-i18n-plugin-plus @babel/plugin-transform-typescript -D
+
 ```
 
 在项目目录下新建文件夹 `i18n`，添加对应的语言包文件夹（注：一个工程对应一个目录，不可共用，否则会相互覆盖
@@ -31,6 +33,7 @@ plugins: [
   new WebpackI18nPlugin(i18nConfig),
   ...
 ]
+
 ```
 
 > 注：如果出现编译死循环（未出现则忽略），需要在webpack配置中添加配置忽略对输出目录的热更新
@@ -60,6 +63,7 @@ module.exports = {
         ]
     }
 }
+
 ```
 
 ### 使用方法|切换语言
@@ -88,12 +92,14 @@ window.$i8n.locale(langMap[lang])
 ```jsx
 // main.js
 import './i18n.js'
+
 ```
 
 如果需要切换语言我们只需要修改 `localStorage`中对应的值，并调用浏览器刷新即可
 
 ```jsx
 window.location.reload()
+
 ```
 
 ### 命名空间
@@ -126,6 +132,42 @@ window.location.reload()
 
    ```
 
+### 参数
+
+| 参数          | 说明                                                                                          | 类型           | 默认值                            |
+| ------------- | --------------------------------------------------------------------------------------------- | -------------- | --------------------------------- |
+| i18nDir       | 国际化配置输出目录                                                                            | string         | path.resolve(__dirname, './i18n') |
+| translation   | 语言配置，可通过不同传入的方式来定义翻译的文件、翻译文本的格式化；具体见下                    | object         |                                   |
+| nameSpace     | 命名空间                                                                                      | string         |                                   |
+| translatePort | 代理端口（科学上网的端口）；用于调用翻译api                                                   | number\|string | string                            |
+| tsOptions     | ts文件配置选项，详见https://babel.docschina.org/docs/babel-plugin-transform-typescript/配置项 | object         |                                   |
+
+### translation[key]: string|array|object
+
+- string: `path.resolve(__dirname, './i18n/en_US/index.xlsx')`
+- array: `[path.resolve(__dirname, './i18n/en_US/index.xlsx')]`
+- object:
+
+```jsx
+{
+	sourceFiles: string|array,
+	formatter: function(value) {} // value: 翻译文本，可对文本做格式化
+}
+```
+
+eg：
+
+```jsx
+translation: {
+        en_US: {
+          sourceFiles: [path.resolve(__dirname, './i18n/en_US/index.xlsx')],
+          formatter: (value) => {
+            return value + " "
+          }
+        } 
+    }
+```
+
 ### 方法
 
 `window.$i8n` 当项目中有相同的中文需要翻译成不同的单词时，提供的自定义翻译解决方法
@@ -156,11 +198,13 @@ const langMap = {
 }
 const lang = localStorage.getItem('lang') || 'en'
 window.$i8n.locale({...langMap[lang], ...customLangMap[lang]})
+
 ```
 
 ```jsx
 // 在需要自定义翻译的地方使用$i18n进行包裹
 $i8n('需求', '需求', nameSpace) // 对应语言下：需求/DEMAND
+
 ```
 
 `window.$$i8n` 当项目中有不需要进行国际化的中文时，可以通过该方法进行跳过
@@ -172,7 +216,14 @@ $i8n('需求', '需求', nameSpace) // 对应语言下：需求/DEMAND
 
 ```jsx
 $$i8n('需求') // 需求
+
 ```
+
+### 备注
+
+1. 编译后，可以关注 **终端** 输出日志，查看翻译情况；
+2. 本插件集成了谷歌翻译，翻译结果准确性有限，也可能调用失败（本地科学上网端口号指向7890，翻译的成功率更高）。
+3. 如果对翻译结果不满意或者未生成对应的翻译结果，可前往 `i18n/` 下对应语言包的 `index.xlsx`对翻译结果进行修改。
 
 ### 备注
 

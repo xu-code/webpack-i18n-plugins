@@ -156,6 +156,7 @@ module.exports.getCallExpressionName = function (node) {
  * @returns {*}
  */
 module.exports.genAIExpression = function (value, isExpression, key) {
+const nameSpace = getOptions('getOptions') || ''
   value = (value || "").trim();
   let valStr = value.replace(/'/g, '"').replace(/(\n)/g, "\\n");
   key = key || genUuidKey(value);
@@ -167,8 +168,18 @@ module.exports.genAIExpression = function (value, isExpression, key) {
         rawValue: value,
       },
     });
-    return types.callExpression(types.identifier(OPTIONS.$i8n), [types.stringLiteral(key), valueExp, types.stringLiteral(process.env.i18nNameSpace)]);
+    return types.callExpression(types.identifier(OPTIONS.$i8n), [types.stringLiteral(key), valueExp, types.stringLiteral(nameSpace)]);
   } else {
-    return `${OPTIONS.$i8n}('${key}','${valStr}','${process.env.i18nNameSpace}')`;
+    return `${OPTIONS.$i8n}('${key}','${valStr}','${nameSpace}')`;
   }
 };
+
+/**
+ * 获取环境中的实例化变量
+ * @param {enum: nameSpace|tsOptions|translatePort} optionsKey
+ */
+const getOptions = function(optionsKey) {
+    const options = process.i18nOptions || {}
+    return options[optionsKey]    
+}
+module.exports.getOptions = getOptions

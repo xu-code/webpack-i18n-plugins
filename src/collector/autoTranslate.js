@@ -1,44 +1,15 @@
-// const translate = require('./deelp');
-// const langeKey = {
-//   en_US: 'en'
-// }
-// module.exports = async function autoTranslate(list, tranKey) {
-//     // function sleep(time) {
-//     //     return new Promise(reslove => {
-//     //         setTimeout(() => {
-//     //             reslove()
-//     //         }, time)
-//     //     })
-//     // }
-//     // for(let i=0;i<list.length;i++) {
-//     //     await sleep(100)
-//     //     const {text} = await translate(list[i].cn, { from:'zh-CN', to: langeKey[tranKey] || tranKey });
-//     //     list[i].text = text
-//     // }
-//     // return list
-//     return new Promise((reslove, reject) => {
-//         Promise.all(list.map(async item => {
-//             const text = await translate(item.cn, 'zh', 'en');
-//             item.text = text
-//         })).then(() => {
-//             reslove(list)
-//         }).catch(err => {
-//             reject(err)
-//         })
-//     })
-// }
+const getOptions = require('../babel-plugin/utils').getOptions
 const tunnel = require('tunnel')
 const {translate} = require('@vitalets/google-translate-api')
-
-const googleTranslator = (text) => translate(
+const googleTranslator = (text, port = 7890) => translate(
     text,
     { from: 'zh-CN',
         to: 'en',
         fetchOptions:   {
             agent: tunnel.httpsOverHttp({
             proxy: {
+                port, // 代理 port
                 host: '127.0.0.1',// 代理 ip
-                port: 7890, // 代理 port
                 headers: {
                 'User-Agent': 'Node'
                 }
@@ -77,13 +48,15 @@ module.exports = function translateRun(list) {
             for (let i = 0; i < chunks.length; i++) {
                 const chunk = chunks[i]
                 const mergeText = chunk.map(v => v.cn).join('\n###\n')// 合并文案
-                const { text } = await googleTranslator(mergeText)
+                const port = getOptions('translatePort')
+                const { text } = await googleTranslator(mergeText, port)
                 const resultValues = text.split(/\n *# *# *# *\n/).map((v) => v.trim())// 拆分文案
                 if (chunk.length !== resultValues.length) {
                 throw new Error('翻译前文案碎片长度和翻译后的不一致')
                 }
                 chunk.forEach((item, index) => {
-                    item.text = resultValues[index]
+                    const translateFormatter = getOptions('translateFormatter') || ((value) => value)
+                    item.text = translateFormatter(resultValues[index])
                 })
             }
             reslove(list)

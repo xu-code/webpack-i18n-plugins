@@ -187,3 +187,11 @@ module.exports.printUndo = function(options) {
     myOra.succeed('语言包生成完毕！\n');
   }
 };
+module.exports.translateFormatter = function (i18nMap, formatter) {
+  if (typeof formatter === 'function') {
+    Object.keys(i18nMap).forEach((key) => {
+      i18nMap[key] = formatter(i18nMap[key]) || i18nMap[key]
+    })
+  }
+  return i18nMap
+}

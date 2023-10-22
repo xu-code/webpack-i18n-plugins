@@ -15,7 +15,14 @@ module.exports = function translate(options, oldKeysMap, reslove) {
   let tranKeys = Object.keys(options.translation || {});
   if (tranKeys && tranKeys.length) {
     tranKeys.forEach((tranKey) => {
-      let sourceFiles = options.translation[tranKey] || [];
+      const tranKeyItem = options.translation[tranKey] || {}
+      let sourceFiles, formatter
+      if (Array.isArray(tranKeyItem)) {
+        sourceFiles = tranKeyItem
+      } else {
+        sourceFiles = tranKeyItem.sourceFiles
+        formatter = tranKeyItem.formatter
+      }
       if (sourceFiles && typeof sourceFiles === "string") {
         sourceFiles = [sourceFiles];
       }
@@ -44,12 +51,11 @@ module.exports = function translate(options, oldKeysMap, reslove) {
 
       let localeResult = {};
       let xlsxData = [];
-      let jsonData = {};
-      let isTranslated = []
+      let translatedList = []
       Object.keys(oldKeysMap).map((key, index) => {
         if (translateObj[key]) {
           localeResult[key] = translateObj[key];
-          isTranslated.push({
+          translatedList.push({
             key: key,
             cn: oldKeysMap[key],
             text: translateObj[key]
@@ -60,8 +66,7 @@ module.exports = function translate(options, oldKeysMap, reslove) {
             cn: oldKeysMap[key],
             text: "",
           });
-          jsonData[key] = oldKeysMap[key];
-        }
+                  }
       });
       if (!xlsxData.length) {
         myOra.succeed('太棒啦！没有需要翻译的文本内容!!')
@@ -74,7 +79,7 @@ module.exports = function translate(options, oldKeysMap, reslove) {
         res.forEach(item => {
           localeResult[item.key] = item.text
         })
-        xlsxData = [...isTranslated, ...res]
+        xlsxData = [...translatedList, ...res]
         writeTranslateFile(true)
         myOra.succeed('翻译成功!!!')
         reslove()
@@ -91,11 +96,10 @@ module.exports = function translate(options, oldKeysMap, reslove) {
       function writeTranslateFile(isTranslate) {
         // 对应翻译结果写入（语言包） /tranKey/index.js
         let outputJsPath = path.resolve(options.i18nDir, "./" + tranKey + "/index.js");
-        let oldLocaleResult;
-        if (fs.existsSync(outputJsPath)) {
-          oldLocaleResult = require(outputJsPath);
+        if (fs.existsSync(outputJsPath) && !fileObjCache[outputJsPath]) {
+          fileObjCache[outputJsPath] = JSON.stringify(require(outputJsPath));
         }
-        const indexJSData = JSON.stringify(localeResult)
+        const indexJSData = JSON.stringify(utils.translateFormatter(localeResult, formatter))
         // 内容有变化则重新写入
         if (fileObjCache[outputJsPath] !== indexJSData) {
           fileObjCache[outputJsPath] = indexJSData
@@ -117,7 +121,7 @@ module.exports = function translate(options, oldKeysMap, reslove) {
             utils.writeFile(toBeTranslate, buf);
           }
           // 写入内容到index.xlsx
-          const indexData = [...isTranslated, ...xlsxData]
+          const indexData = [...translatedList, ...xlsxData]
           if (fileObjCache[indexXlsx] !== JSON.stringify(indexData)) {
             fileObjCache[indexXlsx] = JSON.stringify(indexData)
             const indexBuf = utils.genXLSXData(indexData);
