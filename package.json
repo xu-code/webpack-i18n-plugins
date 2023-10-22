@@ -1,6 +1,6 @@
 {
   "name": "@devops/webpack-i18n-plugin-plus",
-  "version": "1.0.35",
+  "version": "1.1.5",
   "description": "webpack国际化插件-升级版，支持script中的中文识别，支持自动翻译",
   "keywords": [
     "vue",
@@ -21,7 +21,7 @@
   "dependencies": {
     "@babel/cli": "^7.17.6",
     "@babel/core": "^7.17.8",
-    "@babel/plugin-transform-typescript": "^7.22.10",
+    "@babel/plugin-transform-typescript": "^7.22.15",
     "@babel/types": "^7.17.0",
     "@devops/google-translate-api": "^1.0.1",
     "@vitalets/google-translate-api": "^9.2.0",
@@ -33,6 +33,7 @@
   },
   "devDependencies": {
     "@devops/bk-magic-vue": "^2.4.16-alpha.2",
+    "@devops/webpack-i18n-plugin-plus": "^1.1.1",
     "react": "^18.0.0",
     "typescript": "^4.6.3"
   }

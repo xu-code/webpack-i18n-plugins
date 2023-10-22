@@ -3,12 +3,15 @@ const collector = require("./collector");
 const i18nUtils = require("./babel-plugin/utils");
 const ConcatSource = require("webpack-sources").ConcatSource;
 // const polyfilePath = require.resolve("./collector/polyfill.js");
-const setNameSpace = require("./babel-plugin/utils").setNameSpace;
 const polyfilePath = path.resolve(__dirname, "./collector/polyfill.mjs");
 class i18nPlugin {
   constructor(config) {
     this.i18nConfig = config;
-    setNameSpace(config.nameSpace)
+    process.env.i18nNameSpace = config.nameSpace
+    // TS解析配置
+    if (config.tsOptions) {
+      process.env.i18nTsOptions = JSON.stringify(config.tsOptions)
+    }
   }
   apply(compiler) {
     
@@ -48,8 +51,8 @@ class i18nPlugin {
       }
     });
     rules.push({
-      test: /\.(js|ts)$/,
-      exclude: /node_modules/,
+      test: /\.(js|ts|tsx)$/,
+      exclude: /node_modules|i18n/,
       include: /src/,
       loader: path.resolve(__dirname, './loader/index.js')
     })
