@@ -30,20 +30,15 @@ module.exports = function translate(options, oldKeysMap, reslove) {
 
       (sourceFiles || []).forEach((path) => {
         try {
-          if (/\.js$/.test(path)) {
-            let localObj = require(path);
-            Object.assign(translateObj, localObj);
-          } else {
-            let workbook = XLSX.readFile(path);
-            workbook.SheetNames.forEach((name) => {
-              let sheetData = XLSX.utils.sheet_to_json(workbook.Sheets[name]);
-              let tempObj = {};
-              sheetData.forEach((item) => {
-                tempObj[item.key] = String(item.text || "").replace(/(<\/?)\s*([a-zA-z]+)\s*(>)/g, "$1$2$3"); //移除标签空格
-              });
-              Object.assign(translateObj, tempObj);
+          let workbook = XLSX.readFile(path);
+          workbook.SheetNames.forEach((name) => {
+            let sheetData = XLSX.utils.sheet_to_json(workbook.Sheets[name]);
+            let tempObj = {};
+            sheetData.forEach((item) => {
+              tempObj[item.key] = String(item.text || "").replace(/(<\/?)\s*([a-zA-z]+)\s*(>)/g, "$1$2$3"); //移除标签空格
             });
-          }
+            Object.assign(translateObj, tempObj);
+          });
         } catch (e) {
           myOra.fail(e.message);
         }

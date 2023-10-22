@@ -7,7 +7,7 @@ const polyfilePath = path.resolve(__dirname, "./collector/polyfill.mjs");
 class i18nPlugin {
   constructor(config) {
     this.i18nConfig = config;
-    process.i18nOptions = config
+    process.env.i18nOptions = JSON.stringify(config)
   }
   apply(compiler) {
     

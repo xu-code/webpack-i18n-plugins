@@ -156,7 +156,7 @@ module.exports.getCallExpressionName = function (node) {
  * @returns {*}
  */
 module.exports.genAIExpression = function (value, isExpression, key) {
-const nameSpace = getOptions('getOptions') || ''
+const nameSpace = getOptions('nameSpace') || ''
   value = (value || "").trim();
   let valStr = value.replace(/'/g, '"').replace(/(\n)/g, "\\n");
   key = key || genUuidKey(value);
@@ -179,7 +179,11 @@ const nameSpace = getOptions('getOptions') || ''
  * @param {enum: nameSpace|tsOptions|translatePort} optionsKey
  */
 const getOptions = function(optionsKey) {
-    const options = process.i18nOptions || {}
+  try {
+    const options = JSON.parse(process.env.i18nOptions || '{}')
     return options[optionsKey]    
+  } catch (error) {
+    myOra.fail(error.message)
+  }
 }
 module.exports.getOptions = getOptions
