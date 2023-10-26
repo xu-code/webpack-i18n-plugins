@@ -5,12 +5,12 @@
 ### 安装
 
 ```bash
-npm install @devops/webpack-i18n-plugin-plus @babel/plugin-transform-typescript -D
+npm install webpack-i18n-plugin-plus @babel/plugin-transform-typescript -D
 
 ```
 
 ```bash
-yarn add @devops/webpack-i18n-plugin-plus @babel/plugin-transform-typescript -D
+yarn add webpack-i18n-plugin-plus @babel/plugin-transform-typescript -D
 
 ```
 
