@@ -61,7 +61,7 @@ module.exports = function translateRun(list) {
             }
             reslove(list)
         } catch (error) {
-            reject(error)
+            reject({error, list})
         }
     })
 }

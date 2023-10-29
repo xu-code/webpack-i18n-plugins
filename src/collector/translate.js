@@ -9,122 +9,123 @@ const autoTranslate = require('./autoTranslate')
 /**
  *
  * @param options
- * @param oldKeysMap
+ * @param sortKeysMap
  */
-module.exports = function translate(options, oldKeysMap, reslove) {
-  let tranKeys = Object.keys(options.translation || {});
-  if (tranKeys && tranKeys.length) {
-    tranKeys.forEach((tranKey) => {
-      const tranKeyItem = options.translation[tranKey] || {}
-      let sourceFiles, formatter
-      if (Array.isArray(tranKeyItem)) {
-        sourceFiles = tranKeyItem
-      } else {
-        sourceFiles = tranKeyItem.sourceFiles
-        formatter = tranKeyItem.formatter
-      }
-      if (sourceFiles && typeof sourceFiles === "string") {
-        sourceFiles = [sourceFiles];
-      }
-      let translateObj = {};
-
-      (sourceFiles || []).forEach((path) => {
-        try {
-          let workbook = XLSX.readFile(path);
-          workbook.SheetNames.forEach((name) => {
-            let sheetData = XLSX.utils.sheet_to_json(workbook.Sheets[name]);
-            let tempObj = {};
-            sheetData.forEach((item) => {
-              tempObj[item.key] = String(item.text || "").replace(/(<\/?)\s*([a-zA-z]+)\s*(>)/g, "$1$2$3"); //移除标签空格
-            });
-            Object.assign(translateObj, tempObj);
-          });
-        } catch (e) {
-          myOra.fail(e.message);
-        }
+function writeJson (path, data) {
+  const content = JSON.stringify(data, null, 4);
+  utils.writeFile(path, content)
+}
+// 兼容旧版本(获取旧版本中excel的数据)
+function getXlsxData(options) {
+  let sourceFiles, xlsxData = []
+  if (Array.isArray(options)) {
+    sourceFiles = options
+  } else {
+    sourceFiles = options.sourceFiles
+  }
+  (sourceFiles || []).forEach((path) => {
+    try {
+      let workbook = XLSX.readFile(path);
+      workbook.SheetNames.forEach((name) => {
+        let sheetData = XLSX.utils.sheet_to_json(workbook.Sheets[name]);
+        sheetData.forEach((item) => {
+          item.text = String(item.text || "").replace(/(<\/?)\s*([a-zA-z]+)\s*(>)/g, "$1$2$3"); //移除标签空格
+        });
+        xlsxData = [...xlsxData, ...sheetData]
+        // 删除掉excel
+        utils.deleteFile(path)
       });
-
-      let localeResult = {};
-      let xlsxData = [];
-      let translatedList = []
-      Object.keys(oldKeysMap).map((key, index) => {
-        if (translateObj[key]) {
-          localeResult[key] = translateObj[key];
-          translatedList.push({
-            key: key,
-            cn: oldKeysMap[key],
-            text: translateObj[key]
-          })
-        } else {
-          xlsxData.push({
-            key: key,
-            cn: oldKeysMap[key],
-            text: "",
-          });
-                  }
-      });
-      if (!xlsxData.length) {
-        myOra.succeed('太棒啦！没有需要翻译的文本内容!!')
-        writeTranslateFile(false)
-        reslove()
-        return
-      }
-      myOra.start('正在尝试自动翻译，初次执行时间较久，请耐心等待...')
-      autoTranslate(xlsxData, tranKey).then(res => {
-        res.forEach(item => {
-          localeResult[item.key] = item.text
+    } catch (e) {
+      myOra.fail(e.message);
+    }
+  });
+  return xlsxData
+}
+function getJsonHashMap (json) {
+  const hashMap = {}
+  json.forEach(item => {
+    hashMap[item.key] = item.text
+  })
+  return hashMap
+}
+function getTranslate (data, tranKey) {
+  myOra.start('正在尝试自动翻译，初次执行时间较久，请耐心等待...')
+  return new Promise((reslove, reject) => {
+    autoTranslate(data, tranKey).then(list => {
+      myOra.succeed("翻译成功(●'◡'●)!!!")
+      reslove(list)
+    }).catch(({error, list})=> {
+      myOra.fail('翻译失败~(ಥ_ಥ)~,请尝试在对应目录下的json文件中对未翻译文本手动翻译！')
+      myOra.fail(error.message)
+      reslove(list)
+    })
+  })
+}
+module.exports = function translate(options, sortKeysMap, reslove) {
+  const translation = options.translation || {}
+  Object.keys(options.translation || {}).forEach((tranKey) => {
+    let langOpt = translation[tranKey]
+    const xlsxData = getXlsxData(langOpt, tranKey)
+    // 如果存在xlsxData：写入到json中
+    const localePath = path.resolve(options.i18nDir, "./" + tranKey + "/locale.json")
+    const sourceJsonPath = langOpt.sourceJson || path.resolve(options.i18nDir, "./" + tranKey + "/index.json")
+    if (xlsxData && xlsxData.length) {
+      writeJson(localePath, xlsxData)
+      writeJson(sourceJsonPath, xlsxData)
+    }
+    const localeJson = require(localePath)
+    let newLocaleJson = []
+    const sourceJson = require(sourceJsonPath)
+    const localeResult = getJsonHashMap(localeJson) // 已翻译
+    const toBeTranslate = [] // 待翻译
+    Object.keys(sortKeysMap).forEach(key => {
+      if (!localeResult[key]) {
+        toBeTranslate.push({
+          key: key,
+          cn: sortKeysMap[key],
+          text: "",
         })
-        xlsxData = [...translatedList, ...res]
-        writeTranslateFile(true)
-        myOra.succeed('翻译成功!!!')
-        reslove()
-      }).catch(err=> {
-        writeTranslateFile(false)
-        myOra.fail('翻译失败，请尝试在对应目录下的index.xlsx中对未翻译文本手动翻译！')
-        myOra.fail(err.message)
+      }
+    })
+    if (!toBeTranslate.length) {
+      myOra.succeed('太棒啦！没有需要翻译的文本内容!!')
+      reslove()
+    } else {
+      // 执行翻译
+      getTranslate(toBeTranslate, tranKey).then(res => {
+        const newRes = res.filter(item => {
+          return !localeResult[item.key]
+        })
+        const filterLocal = localeJson.filter(item => item.text)
+        newLocaleJson = [...filterLocal, ...newRes]
+        writeTranslateFile()
         reslove()
       })
-      /**
-       * 判断翻译是否成功，从而决定应该写入哪个excel表
-       * @param {boolean} isTranslate  
-       */
-      function writeTranslateFile(isTranslate) {
-        // 对应翻译结果写入（语言包） /tranKey/index.js
-        let outputJsPath = path.resolve(options.i18nDir, "./" + tranKey + "/index.js");
-        if (fs.existsSync(outputJsPath) && !fileObjCache[outputJsPath]) {
-          fileObjCache[outputJsPath] = JSON.stringify(require(outputJsPath));
-        }
-        const indexJSData = JSON.stringify(utils.translateFormatter(localeResult, formatter))
-        // 内容有变化则重新写入
-        if (fileObjCache[outputJsPath] !== indexJSData) {
-          fileObjCache[outputJsPath] = indexJSData
-          let localeCode = "module.exports = " + indexJSData;
-          utils.writeFile(outputJsPath, localeCode);
-        }
-        // 翻译成功写入xlsx，翻译失败写入待翻译文件；
-        const indexXlsx = path.resolve(options.i18nDir, "./" + tranKey + '/index.xlsx')
-        const toBeTranslate = path.resolve(options.i18nDir, "./" + tranKey + '/待翻译.xlsx')
-        const buf = utils.genXLSXData(xlsxData);
-        if(isTranslate) {
-          // 翻译成功，删除待翻译文件
-          utils.deleteFile(toBeTranslate)
-          // 写入内容到index.xlsx
-          utils.writeFile(indexXlsx, buf);
-        } else {
-          if (fileObjCache[toBeTranslate] !== JSON.stringify(xlsxData)) {
-            fileObjCache[toBeTranslate] = JSON.stringify(xlsxData)
-            utils.writeFile(toBeTranslate, buf);
-          }
-          // 写入内容到index.xlsx
-          const indexData = [...translatedList, ...xlsxData]
-          if (fileObjCache[indexXlsx] !== JSON.stringify(indexData)) {
-            fileObjCache[indexXlsx] = JSON.stringify(indexData)
-            const indexBuf = utils.genXLSXData(indexData);
-            utils.writeFile(indexXlsx, indexBuf);
-          }
-          utils.setUndoCount(tranKey, xlsxData.length);
-        }
+    }
+    function writeTranslateFile() {
+      // 对应翻译结果写入（语言包） /tranKey/index.js
+      let outputJsPath = path.resolve(options.i18nDir, "./" + tranKey + "/index.js");
+      // 对结果做缓存
+      if (fs.existsSync(outputJsPath) && !fileObjCache[outputJsPath]) {
+        fileObjCache[outputJsPath] = JSON.stringify(require(outputJsPath));
       }
-    });
-  }
+      const newLocalHashMap = getJsonHashMap(newLocaleJson)
+      const sourceHashMap = getJsonHashMap(sourceJson)
+      for(let key in newLocalHashMap) {
+        newLocalHashMap[key] = sourceHashMap[key] || newLocalHashMap[key]
+      }
+      // 译文格式化
+      const indexJSData = JSON.stringify(utils.translateFormatter(newLocalHashMap, langOpt.formatter))
+      // 内容有变化则重新写入
+      if (fileObjCache[outputJsPath] !== indexJSData) {
+        fileObjCache[outputJsPath] = indexJSData
+        let localeCode = "module.exports = " + indexJSData;
+        utils.writeFile(outputJsPath, localeCode);
+      }
+      // json内容如果有变化重新写入
+      if(JSON.stringify(localeJson) !== JSON.stringify(newLocaleJson)) {
+        writeJson(localePath, newLocaleJson)
+      }
+    }
+  })
 };
