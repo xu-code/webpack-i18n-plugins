@@ -1,10 +1,10 @@
 const getOptions = require('../babel-plugin/utils').getOptions
 const tunnel = require('tunnel')
 const {translate} = require('@vitalets/google-translate-api')
-const googleTranslator = (text, port = 7890) => translate(
+const googleTranslator = (text, tranKey, port = 7890) => translate(
     text,
     { from: 'zh-CN',
-        to: 'en',
+        to: tranKey,
         fetchOptions:   {
             agent: tunnel.httpsOverHttp({
             proxy: {
@@ -19,7 +19,12 @@ const googleTranslator = (text, port = 7890) => translate(
     }
 )
 // 定义翻译方法
-module.exports = function translateRun(list) {
+module.exports = function translateRun(list, tranKey) {
+    // 兼容1.x版本传入的en_US
+    const langKeyMap = {
+        'en_US': 'en'
+    }
+    tranKey = langKeyMap[tranKey] || tranKey
     return new Promise(async (reslove, reject) => {
         if(!list.length) {
             reslove(list)
@@ -49,7 +54,7 @@ module.exports = function translateRun(list) {
                 const chunk = chunks[i]
                 const mergeText = chunk.map(v => v.cn).join('\n###\n')// 合并文案
                 const port = getOptions('translatePort')
-                const { text } = await googleTranslator(mergeText, port)
+                const { text } = await googleTranslator(mergeText, tranKey, port)
                 const resultValues = text.split(/\n *# *# *# *\n/).map((v) => v.trim())// 拆分文案
                 if (chunk.length !== resultValues.length) {
                 throw new Error('翻译前文案碎片长度和翻译后的不一致')

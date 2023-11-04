@@ -67,19 +67,29 @@ module.exports = function translate(options, sortKeysMap, reslove) {
     let langOpt = translation[tranKey]
     const xlsxData = getXlsxData(langOpt, tranKey)
     // 如果存在xlsxData：写入到json中
-    const localePath = path.resolve(options.i18nDir, "./" + tranKey + "/locale.json")
-    const sourceJsonPath = langOpt.sourceJson || path.resolve(options.i18nDir, "./" + tranKey + "/index.json")
+    const indexPath = path.resolve(options.i18nDir, "./" + tranKey + "/index.json")
+    const userJsonPath = langOpt.userJson || path.resolve(options.i18nDir, "./" + tranKey + "/user.json")
     if (xlsxData && xlsxData.length) {
-      writeJson(localePath, xlsxData)
-      writeJson(sourceJsonPath, xlsxData)
+      writeJson(indexPath, xlsxData)
+      writeJson(userJsonPath, xlsxData)
     }
-    const localeJson = require(localePath)
-    let newLocaleJson = []
-    const sourceJson = require(sourceJsonPath)
-    const localeResult = getJsonHashMap(localeJson) // 已翻译
+    let indexJson = [] // 机翻结果
+    if (fs.existsSync(indexPath)) {
+      // 清除缓存
+      delete require.cache[indexJson]
+      indexJson = require(indexPath)
+    }
+    let userJson = [] // 用户自定义结果
+    if (fs.existsSync(userJsonPath)) {
+      // 清除缓存
+      delete require.cache[userJsonPath]
+      userJson = require(userJsonPath)
+    }
+    let newIndexJson = []
+    const indexResult = getJsonHashMap(indexJson) // 已翻译
     const toBeTranslate = [] // 待翻译
     Object.keys(sortKeysMap).forEach(key => {
-      if (!localeResult[key]) {
+      if (!indexResult[key]) {
         toBeTranslate.push({
           key: key,
           cn: sortKeysMap[key],
@@ -89,15 +99,17 @@ module.exports = function translate(options, sortKeysMap, reslove) {
     })
     if (!toBeTranslate.length) {
       myOra.succeed('太棒啦！没有需要翻译的文本内容!!')
+      newIndexJson = [...indexJson.filter(item => item.text)]
+      writeTranslateFile()
       reslove()
     } else {
       // 执行翻译
       getTranslate(toBeTranslate, tranKey).then(res => {
         const newRes = res.filter(item => {
-          return !localeResult[item.key]
+          return !indexResult[item.key]
         })
-        const filterLocal = localeJson.filter(item => item.text)
-        newLocaleJson = [...filterLocal, ...newRes]
+        const filterLocal = indexJson.filter(item => item.text)
+        newIndexJson = [...filterLocal, ...newRes]
         writeTranslateFile()
         reslove()
       })
@@ -109,22 +121,22 @@ module.exports = function translate(options, sortKeysMap, reslove) {
       if (fs.existsSync(outputJsPath) && !fileObjCache[outputJsPath]) {
         fileObjCache[outputJsPath] = JSON.stringify(require(outputJsPath));
       }
-      const newLocalHashMap = getJsonHashMap(newLocaleJson)
-      const sourceHashMap = getJsonHashMap(sourceJson)
+      const newLocalHashMap = getJsonHashMap(newIndexJson)
+      const userHashMap = getJsonHashMap(userJson)
       for(let key in newLocalHashMap) {
-        newLocalHashMap[key] = sourceHashMap[key] || newLocalHashMap[key]
+        newLocalHashMap[key] = userHashMap[key] || newLocalHashMap[key]
       }
       // 译文格式化
       const indexJSData = JSON.stringify(utils.translateFormatter(newLocalHashMap, langOpt.formatter))
       // 内容有变化则重新写入
       if (fileObjCache[outputJsPath] !== indexJSData) {
         fileObjCache[outputJsPath] = indexJSData
-        let localeCode = "module.exports = " + indexJSData;
-        utils.writeFile(outputJsPath, localeCode);
+        let indexCode = "module.exports = " + indexJSData;
+        utils.writeFile(outputJsPath, indexCode);
       }
       // json内容如果有变化重新写入
-      if(JSON.stringify(localeJson) !== JSON.stringify(newLocaleJson)) {
-        writeJson(localePath, newLocaleJson)
+      if(JSON.stringify(indexJson) !== JSON.stringify(newIndexJson)) {
+        writeJson(indexPath, newIndexJson)
       }
     }
   })
