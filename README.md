@@ -7,9 +7,6 @@
 ```bash
 npm install @devops/webpack-i18n-plugin-plus @babel/plugin-transform-typescript -D
 
-```
-
-```bash
 yarn add @devops/webpack-i18n-plugin-plus @babel/plugin-transform-typescript -D
 
 ```
@@ -39,7 +36,6 @@ plugins: [
 > 注：如果出现编译死循环（未出现则忽略），需要在webpack配置中添加配置忽略对输出目录的热更新
 
 ```jsx
-
 config.devServer.watchOptions = {
         ignored: /i18n/
 }
@@ -118,8 +114,9 @@ window.location.reload()
        },
        nameSpace: 'vueProject1'
    }
-
+   
    ```
+
 2. 在注入语言包时，传入命名空间的key值（需与步骤1的key值保持一致）
 
    ```jsx
@@ -129,17 +126,18 @@ window.location.reload()
    }
    const lang = localStorage.getItem('lang') || 'en'
    window.$i8n.locale(langMap[lang], 'vueProject1')
-
+   
    ```
 
 ### 参数
 
-| 参数          | 说明                                                                                          | 类型           | 默认值                            |
-| ------------- | --------------------------------------------------------------------------------------------- | -------------- | --------------------------------- |
-| i18nDir       | 国际化配置输出目录                                                                            | string         | path.resolve(__dirname, './i18n') |
-| translation   | 语言配置，可通过不同传入的方式来定义翻译的文件、翻译文本的格式化；具体见下                    | object         |                                   |
-| nameSpace     | 命名空间                                                                                      | string         |                                   |
-| translatePort | 代理端口（科学上网的端口）；用于调用翻译api                                                   | number\|string | string                            |
+| 参数          | 说明                                                         | 类型           | 默认值                            |
+| ------------- | ------------------------------------------------------------ | -------------- | --------------------------------- |
+| i18nDir       | 国际化配置输出目录                                           | string         | path.resolve(__dirname, './i18n') |
+| translation   | 语言配置，可通过不同传入的方式来定义翻译的文件、翻译文本的格式化；具体见下 | object         |                                   |
+| nameSpace     | 命名空间                                                     | string         |                                   |
+| isSync        | 是否同步                                                     | boolean        |                                   |
+| translatePort | 代理端口（科学上网的端口）；用于调用翻译api                  | number\|string | string                            |
 | tsOptions     | ts文件配置选项，详见https://babel.docschina.org/docs/babel-plugin-transform-typescript/配置项 | object         |                                   |
 
 ### translation[key]: string|array|object
@@ -150,8 +148,8 @@ window.location.reload()
 
 ```jsx
 {
-	sourceFiles: string|array,
-	formatter: function(value) {} // value: 翻译文本，可对文本做格式化
+  sourceFiles: string|array,
+  formatter: function(value) {} // value: 翻译文本，可对文本做格式化
 }
 ```
 
@@ -184,12 +182,12 @@ translation: {
 ```jsx
 // 在项目下定义对应的语言JSON，如
 const customLangMap = {
-	'en': {
+  'en': {
         '需求': 'DEMAND'
-	},
+  },
     'zhcn': {
         '需求': '需求'
-	}
+  }
 }
 // 在注入语言包时，将对应的语言包进行解构
 const langMap = {
@@ -199,9 +197,6 @@ const langMap = {
 const lang = localStorage.getItem('lang') || 'en'
 window.$i8n.locale({...langMap[lang], ...customLangMap[lang]})
 
-```
-
-```jsx
 // 在需要自定义翻译的地方使用$i18n进行包裹
 $i8n('需求', '需求', nameSpace) // 对应语言下：需求/DEMAND
 
