@@ -82,7 +82,7 @@ const i18nConfig = {
     translation: {
         en: {
         	userJson: path.resolve(__dirname, './i18n/en/user.json') // 若对翻译结果不满意，可在对应目录下添加user.json文件，格式参照生成的index.json，最终翻译生成的语言包会优先取userJson中的text值；
-        	formatt: value => value+ ' ' // 译文格式化，此处将翻译结果的末尾都加上了空格，在页面展示会更加友好
+        	formatter: value => value+ ' ' // 译文格式化，此处将翻译结果的末尾都加上了空格，在页面展示会更加友好
         },
         port: 7890 // 默认值7890，由于翻译调用的是谷歌翻译api，需要提供科学上网的端口，否则大概率翻译失败
     }
