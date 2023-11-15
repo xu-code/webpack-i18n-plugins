@@ -172,6 +172,7 @@ window.location.reload()
 | i18nDir       | 国际化配置输出目录                                           | string         | path.resolve(__dirname, './i18n') |
 | translation   | 语言配置，可通过不同传入的方式来定义翻译的文件、翻译文本的格式化；具体见下 translation | object         |                                   |
 | nameSpace     | 命名空间                                                     | string         |                                   |
+| isSync        | 是否同步                                                     | boolean        |                                   |
 | translatePort | 代理端口（科学上网的端口）；用于调用翻译api                  | number\|string | 7890                              |
 | tsOptions     | ts文件配置选项，详见 https://babel.docschina.org/docs/babel-plugin-transform-typescript/ 配置项 | object         |                                   |
 
