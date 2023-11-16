@@ -72,7 +72,7 @@ class i18nPlugin {
     compiler.hooks.emit[tapMethod]("i18nPlugin", (compilation, callback) => {
       if (this.i18nConfig.makefile !== false) {
         const promise = collector(this.i18nConfig);
-        if(this.i18nConfig.isSync) {
+        if(this.i18nConfig.isSync !== false) {
           promise.then(() => {
             callback();
           })
@@ -93,9 +93,12 @@ class i18nPlugin {
       });
     });
     // 输出国际化结果信息
-    compiler.hooks.done[tapMethod]("i18nPlugin", (stats) => {
+    compiler.hooks.done[tapMethod]("i18nPlugin", (stats, callback) => {
       if (this.i18nConfig.makefile !== false) {
         collector.utils.printUndo(this.i18nConfig);
+      }
+      if(this.i18nConfig.isSync !== false) {
+          callback();
       }
     });
   }
