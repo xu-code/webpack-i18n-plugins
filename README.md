@@ -2,6 +2,40 @@
 
 # 中文国际化插件2.0，适用于 vue2.x，支持ts
 
+### 从1.x迁移(未使用1.x版本的可直接跳过)
+
+1、直接安装最新版本（注意查看当前最新版本
+
+```
+npm install @devops/webpack-i18n-plugin-plus@2.x @babel/plugin-transform-typescript -D
+or
+yarn add @devops/webpack-i18n-plugin-plus@2.x @babel/plugin-transform-typescript -D
+```
+
+2、安装完成之后，先直接启动项目，插件会将历史的index.xlsx转化为user.json文件。
+
+3、完成步骤1，2之后，可将配置修改为以下(最新版可直接使用key值可直接使用en代替en_US(也可以不做调整)，如果修改对应引入的文件语言包也需要调整)
+
+```javascript
+// webpack.config.js
+const WebpackI18nPlugin = require('webpack-i18n-plugin-plus')
+const i18nConfig = {
+    i18nDir: path.resolve(__dirname, './i18n'), // 国际化配置输出目录，默认值：path.resolve(__dirname, './i18n')
+    translation: {
+        en: {},
+        port: 7890 // 默认值7890，由于翻译调用的是谷歌翻译api，需要提供科学上网的端口，否则大概率翻译失败
+    }
+}
+plugins: [
+  ...
+  new WebpackI18nPlugin(i18nConfig)
+  ...
+]
+
+```
+
+
+
 ### 安装
 
 ```bash
@@ -10,7 +44,7 @@ npm install @devops/webpack-i18n-plugin-plus @babel/plugin-transform-typescript 
 
 或
 
-```bash
+```
 yarn add @devops/webpack-i18n-plugin-plus @babel/plugin-transform-typescript -D
 ```
 
@@ -81,8 +115,8 @@ const i18nConfig = {
     i18nDir: path.resolve(__dirname, './i18n'), // 国际化配置输出目录
     translation: {
         en: {
-        	userJson: path.resolve(__dirname, './i18n/en/user.json') // 若对翻译结果不满意，可在对应目录下添加user.json文件，格式参照生成的index.json，最终翻译生成的语言包会优先取userJson中的text值；
-        	formatter: value => value+ ' ' // 译文格式化，此处将翻译结果的末尾都加上了空格，在页面展示会更加友好
+          userJson: path.resolve(__dirname, './i18n/en/user.json') // 若对翻译结果不满意，可在对应目录下添加user.json文件，格式参照生成的index.json，最终翻译生成的语言包会优先取userJson中的text值；
+          formatt: value => value+ ' ' // 译文格式化，此处将翻译结果的末尾都加上了空格，在页面展示会更加友好
         },
         port: 7890 // 默认值7890，由于翻译调用的是谷歌翻译api，需要提供科学上网的端口，否则大概率翻译失败
     }
@@ -172,11 +206,13 @@ window.location.reload()
 | i18nDir       | 国际化配置输出目录                                           | string         | path.resolve(__dirname, './i18n') |
 | translation   | 语言配置，可通过不同传入的方式来定义翻译的文件、翻译文本的格式化；具体见下 translation | object         |                                   |
 | nameSpace     | 命名空间                                                     | string         |                                   |
-| isSync        | 是否同步                                                     | boolean        |                                   |
+| isSync        | 是否同步执行                                                 | string         | true                              |
 | translatePort | 代理端口（科学上网的端口）；用于调用翻译api                  | number\|string | 7890                              |
-| tsOptions     | ts文件配置选项，详见 https://babel.docschina.org/docs/babel-plugin-transform-typescript/ 配置项 | object         |                                   |
+| tsOptions     | ts文件配置选项，详见 [配置项](https://babel.docschina.org/docs/babel-plugin-transform-typescript/ ) | object         |                                   |
 
 ### translation[key]: string|array|object
+
+key值对应的语言详见： [ISO-639](https://cloud.google.com/translate/docs/languages?hl=zh-cn)
 
 - string: `path.resolve(__dirname, './i18n/en_US/index.xlsx')`
 - array: `[path.resolve(__dirname, './i18n/en_US/index.xlsx')]`

@@ -68,7 +68,7 @@ class i18nPlugin {
 
     // 收集国际化信息，并生成对应的文件
     let versionRe = /\$\{i18n_locale_language_version\}/g;
-    const tapMethod = this.i18nConfig.isSync ? "tapAsync" : "tap"
+    const tapMethod = this.i18nConfig.isSync === false ? "tap" : "tapAsync"
     compiler.hooks.emit[tapMethod]("i18nPlugin", (compilation, callback) => {
       if (this.i18nConfig.makefile !== false) {
         const promise = collector(this.i18nConfig);
