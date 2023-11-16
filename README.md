@@ -7,9 +7,9 @@
 1、直接安装最新版本（注意查看当前最新版本
 
 ```
-npm install @devops/webpack-i18n-plugin-plus@2.x @babel/plugin-transform-typescript -D
+npm install webpack-i18n-plugin-plus@2.x @babel/plugin-transform-typescript -D
 or
-yarn add @devops/webpack-i18n-plugin-plus@2.x @babel/plugin-transform-typescript -D
+yarn add webpack-i18n-plugin-plus@2.x @babel/plugin-transform-typescript -D
 ```
 
 2、安装完成之后，先直接启动项目，插件会将历史的index.xlsx转化为user.json文件。
@@ -39,13 +39,13 @@ plugins: [
 ### 安装
 
 ```bash
-npm install @devops/webpack-i18n-plugin-plus @babel/plugin-transform-typescript -D
+npm install webpack-i18n-plugin-plus @babel/plugin-transform-typescript -D
 ```
 
 或
 
 ```
-yarn add @devops/webpack-i18n-plugin-plus @babel/plugin-transform-typescript -D
+yarn add webpack-i18n-plugin-plus @babel/plugin-transform-typescript -D
 ```
 
 
