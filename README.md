@@ -4,7 +4,7 @@
 
 ### 从1.x迁移(未使用1.x版本的可直接跳过)
 
-1、直接安装最新版本**（注意查看当前最新版本**
+1、直接安装最新版本**（注意查看当前最新版本）**
 
 ```bash
 npm install @devops/webpack-i18n-plugin-plus@2.x @babel/plugin-transform-typescript -D
