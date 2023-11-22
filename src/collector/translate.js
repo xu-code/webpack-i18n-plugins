@@ -18,10 +18,13 @@ function writeJson (path, data) {
 // 兼容旧版本(获取旧版本中excel的数据)
 function getXlsxData(options) {
   let sourceFiles, xlsxData = []
-  if (Array.isArray(options)) {
+  if (Array.isArray(options) || typeof options === 'string') {
     sourceFiles = options
   } else {
     sourceFiles = options.sourceFiles
+  }
+  if (sourceFiles && typeof sourceFiles === "string") {
+    sourceFiles = [sourceFiles];
   }
   (sourceFiles || []).forEach((path) => {
     try {
