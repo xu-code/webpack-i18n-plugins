@@ -24,7 +24,7 @@ yarn dev
 
 ```javascript
 // webpack.config.js
-const WebpackI18nPlugin = require('webpack-i18n-plugin-plus')
+const WebpackI18nPlugin = require('@devops/webpack-i18n-plugin-plus')
 const i18nConfig = {
     i18nDir: path.resolve(__dirname, './i18n'), // 国际化配置输出目录，默认值：path.resolve(__dirname, './i18n')
     translation: {
@@ -66,7 +66,7 @@ yarn add @devops/webpack-i18n-plugin-plus @babel/plugin-transform-typescript -D
 
 ```javascript
 // webpack.config.js
-const WebpackI18nPlugin = require('webpack-i18n-plugin-plus')
+const WebpackI18nPlugin = require('@devops/webpack-i18n-plugin-plus')
 const i18nConfig = {
     i18nDir: path.resolve(__dirname, './i18n'), // 国际化配置输出目录，默认值：path.resolve(__dirname, './i18n')
     translation: {
@@ -96,7 +96,7 @@ config.devServer.watchOptions = {
 #### 基础使用
 
 ```javascript
-const WebpackI18nPlugin = require('webpack-i18n-plugin-plus')
+const WebpackI18nPlugin = require('@devops/webpack-i18n-plugin-plus')
 const i18nConfig = {
     i18nDir: path.resolve(__dirname, './i18n'), // 国际化配置输出目录
     translation: {
@@ -120,7 +120,7 @@ module.exports = {
 #### 进阶用法
 
 ```javascript
-const WebpackI18nPlugin = require('webpack-i18n-plugin-plus')
+const WebpackI18nPlugin = require('@devops/webpack-i18n-plugin-plus')
 const i18nConfig = {
     i18nDir: path.resolve(__dirname, './i18n'), // 国际化配置输出目录
     translation: {
