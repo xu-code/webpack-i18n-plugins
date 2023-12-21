@@ -7,7 +7,7 @@
 1、直接安装最新版本 **（注意查看当前最新版本）**
 
 ```bash
-npm install @devops/webpack-i18n-plugin-plus@2.x @babel/plugin-transform-typescript -D
+npm install webpack-i18n-plugin-plus@2.x @babel/plugin-transform-typescript -D
 or
 yarn add webpack-i18n-plugin-plus@2.x @babel/plugin-transform-typescript -D
 ```
