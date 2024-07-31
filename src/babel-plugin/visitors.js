@@ -14,7 +14,10 @@ module.exports.StringLiteral = function (path) {
   if (utils.isChinese(value) && !excludedReg.test(value)) {
     let parentNode = path.parent;
     let callName = babelUtils.getCallExpressionName(parentNode);
-    let ignoreExpression = types.isImportDeclaration(parentNode) || parentNode.key === node || (types.isCallExpression(parentNode) && options.excludedCall.indexOf(callName) >= 0);
+    const isExclude = options.excludedCall.some(item => {
+        return item.test(callName)
+    })
+    let ignoreExpression = types.isImportDeclaration(parentNode) || parentNode.key === node || (types.isCallExpression(parentNode) && isExclude);
 
     if (!ignoreExpression) {
       if (types.isJSXAttribute(parentNode)) {
@@ -52,7 +55,10 @@ module.exports.TemplateElement = function (path) {
   if (utils.isChinese(value) && !excludedReg.test(value)) {
     let parentNode = path.parent;
     let callName = babelUtils.getCallExpressionName(parentNode);
-    let ignoreExpression = types.isCallExpression(parentNode) && options.excludedCall.indexOf(callName) >= 0;
+    const isExclude = options.excludedCall.some(item => {
+      return item.test(callName)
+  })
+    let ignoreExpression = types.isCallExpression(parentNode) && isExclude;
 
     if (!ignoreExpression) {
       let tplStr = `\${${babelUtils.genAIExpression(value)}}`;
