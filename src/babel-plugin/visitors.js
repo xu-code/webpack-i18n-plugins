@@ -53,8 +53,17 @@ module.exports.TemplateElement = function (path) {
   let excludedReg = new RegExp(options.excludedPattern);
 
   if (utils.isChinese(value) && !excludedReg.test(value)) {
-    let parentNode = path.parent;
-    let callName = babelUtils.getCallExpressionName(parentNode);
+    // let parentNode = path.parent;
+    // let callName = babelUtils.getCallExpressionName(parentNode);
+    let callName = "";
+    let parentPath = path.parentPath; // TemplateLiteral
+    if (types.isTemplateLiteral(parentPath.node)) {
+      let grandParentPath = parentPath.parentPath;
+      // 检查是否在 CallExpression 的参数中
+      if (types.isCallExpression(grandParentPath.node)) {
+        callName = babelUtils.getCallExpressionName(grandParentPath.node);
+      }
+    }
     const isExclude = options.excludedCall.some(item => {
       return item.test(callName)
   })
