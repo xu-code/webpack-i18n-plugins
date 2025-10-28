@@ -125,11 +125,23 @@ const i18nConfig = {
     i18nDir: path.resolve(__dirname, './i18n'), // 国际化配置输出目录
     translation: {
         en: {
-          userJson: path.resolve(__dirname, './i18n/en/user.json') // 若对翻译结果不满意，可在对应目录下添加user.json文件，格式参照生成的index.json，最终翻译生成的语言包会优先取userJson中的text值，下面给出例子；
+          userJson: path.resolve(__dirname, './i18n/en/user.json'), // 若对翻译结果不满意，可在对应目录下添加user.json文件，格式参照生成的index.json，最终翻译生成的语言包会优先取userJson中的text值，下面给出例子；
           formatter: value => value+ ' ' // 译文格式化，此处将翻译结果的末尾都加上了空格，在页面展示会更加友好
         }
     },
-    translatePort: 7890 // 默认值7890，由于翻译调用的是谷歌翻译api，需要提供科学上网的端口，否则大概率翻译失败
+    translatePort: 7890, // 默认值7890，由于翻译调用的是谷歌翻译api，需要提供科学上网的端口，否则大概率翻译失败
+    // 文件路径控制配置
+    includePaths: [
+        /\/components\//, // 包含 components 目录
+        /\/views\//, // 包含 views 目录
+        path.resolve(__dirname, './src/utils') // 包含特定的 utils 目录
+    ],
+    excludePaths: [
+        /\/test\//, // 排除 test 目录
+        /\.spec\.js$/, // 排除测试文件
+        /\/mock\//, // 排除 mock 目录
+        path.resolve(__dirname, './src/config') // 排除特定的 config 目录
+    ]
 }
 module.exports = {
     configureWebpack: {
@@ -253,6 +265,130 @@ window.location.reload()
 | isSync        | 是否同步执行                                                 | string         | true                              |
 | translatePort | 代理端口（科学上网的端口）；用于调用翻译api                  | number\|string | 7890                              |
 | tsOptions     | ts文件配置选项，详见 [配置项](https://babel.docschina.org/docs/babel-plugin-transform-typescript/ ) | object         |                                   |
+| includePaths  | 额外包含的文件路径，用于指定需要进行国际化处理的额外目录或文件 | string\|array  | 默认包含 /src/                    |
+| excludePaths  | 排除的文件路径，用于指定不需要进行国际化处理的目录或文件     | string\|array  | 默认排除 /node_modules\|i18n/     |
+
+### }
+```
+
+#### includePaths 和 excludePaths 详细说明
+
+这两个配置项用于精确控制插件处理哪些文件进行国际化扫描和转换。
+
+##### includePaths（包含路径）
+
+- **类型：** `string | string[] | RegExp | RegExp[]`
+- **默认值：** `[/src/]` - 默认包含 src 目录
+- **说明：** 指定额外需要进行国际化处理的文件或目录路径
+
+**使用示例：**
+
+```javascript
+// 字符串形式 - 包含特定目录
+includePaths: './src/components'
+
+// 数组形式 - 包含多个路径
+includePaths: [
+    './src/components',
+    './src/views',
+    './src/utils'
+]
+
+// 正则表达式形式 - 更灵活的匹配
+includePaths: [
+    /\/components\//, // 包含任何路径中含有 components 的文件
+    /\/views\//, // 包含任何路径中含有 views 的文件
+    /\.vue$/ // 包含所有 .vue 文件
+]
+
+// 混合形式 - 绝对路径 + 正则
+includePaths: [
+    path.resolve(__dirname, './src/components'),
+    /\/shared\//
+]
+```
+
+##### excludePaths（排除路径）
+
+- **类型：** `string | string[] | RegExp | RegExp[]`
+- **默认值：** `[/node_modules|i18n/]` - 默认排除 node_modules 和 i18n 目录
+- **说明：** 指定不需要进行国际化处理的文件或目录路径
+
+**使用示例：**
+
+```javascript
+// 字符串形式 - 排除特定目录
+excludePaths: './src/test'
+
+// 数组形式 - 排除多个路径
+excludePaths: [
+    './src/test',
+    './src/mock',
+    './src/config'
+]
+
+// 正则表达式形式 - 灵活匹配
+excludePaths: [
+    /\/test\//, // 排除测试目录
+    /\.spec\.js$/, // 排除测试文件
+    /\.test\.js$/, // 排除测试文件
+    /\/mock\//, // 排除 mock 目录
+    /\/config\//, // 排除配置目录
+    /\/constants\//, // 排除常量文件
+]
+
+// 混合形式
+excludePaths: [
+    path.resolve(__dirname, './src/test'),
+    /\.spec\.(js|ts)$/,
+    /\/mock\//
+]
+```
+
+##### 配置优先级和注意事项
+
+1. **优先级：** `excludePaths` 的优先级高于 `includePaths`，即如果一个文件既被包含又被排除，最终会被排除
+2. **默认行为：** 
+   - 默认处理 `/src/` 目录下的所有 `.js`、`.ts`、`.tsx` 文件
+   - 默认排除 `node_modules` 和 `i18n` 目录
+3. **路径格式：** 支持相对路径、绝对路径和正则表达式
+4. **文件类型：** 插件固定处理 `.js`、`.ts`、`.tsx` 文件，无法通过配置修改
+
+##### 实际应用场景
+
+```javascript
+const i18nConfig = {
+    // 其他配置...
+    
+    // 场景1：只处理特定的业务模块
+    includePaths: [
+        /\/src\/modules\/user\//,
+        /\/src\/modules\/order\//
+    ],
+    excludePaths: [
+        /\/src\/modules\/admin\//, // 管理模块不需要国际化
+    ],
+    
+    // 场景2：排除第三方库和工具文件
+    excludePaths: [
+        /\/vendor\//, // 第三方库
+        /\/utils\//, // 工具函数
+        /\.config\.js$/, // 配置文件
+        /\.constant\.js$/, // 常量文件
+    ],
+    
+    // 场景3：只处理页面组件，排除业务逻辑
+    includePaths: [
+        /\/src\/pages\//,
+        /\/src\/components\//
+    ],
+    excludePaths: [
+        /\/src\/api\//, // API 接口
+        /\/src\/store\//, // 状态管理
+        /\/src\/router\//, // 路由配置
+    ]
+}
+```
 
 ### translation[key]: object
 

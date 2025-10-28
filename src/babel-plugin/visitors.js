@@ -53,7 +53,7 @@ module.exports.TemplateElement = function (path) {
   let excludedReg = new RegExp(options.excludedPattern);
 
   if (utils.isChinese(value) && !excludedReg.test(value)) {
-    // let parentNode = path.parent;
+    let parentNode = path.parent;
     // let callName = babelUtils.getCallExpressionName(parentNode);
     let callName = "";
     let parentPath = path.parentPath; // TemplateLiteral

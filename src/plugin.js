@@ -46,10 +46,19 @@ class i18nPlugin {
         prePitcher = item;
       }
     });
+
+    // 处理 excludePaths 和 includePaths 配置
+    const excludePaths = this.i18nConfig.excludePaths 
+      ? (Array.isArray(this.i18nConfig.excludePaths) ? this.i18nConfig.excludePaths : [this.i18nConfig.excludePaths])
+      : [];
+    const includePaths = this.i18nConfig.includePaths 
+      ? (Array.isArray(this.i18nConfig.includePaths) ? this.i18nConfig.includePaths : [this.i18nConfig.includePaths])
+      : [];
+    
     rules.push({
       test: /\.(js|ts|tsx)$/,
-      exclude: /node_modules|i18n/,
-      include: /src/,
+      exclude: [/node_modules|i18n/, ...excludePaths],
+      include: [/src/, ...includePaths],
       loader: path.resolve(__dirname, './loader/index.js')
     })
     if (prePitcher) {
