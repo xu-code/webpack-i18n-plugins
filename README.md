@@ -267,6 +267,7 @@ window.location.reload()
 | tsOptions     | ts文件配置选项，详见 [配置项](https://babel.docschina.org/docs/babel-plugin-transform-typescript/ ) | object         |                                   |
 | includePaths  | 额外包含的文件路径，用于指定需要进行国际化处理的额外目录或文件 | string\|array  | 默认包含 /src/                    |
 | excludePaths  | 排除的文件路径，用于指定不需要进行国际化处理的目录或文件     | string\|array  | 默认排除 /node_modules\|i18n/     |
+| excludedCall  | 排除的方法调用，被这些方法包裹的中文将不会被扫描翻译（与默认排除列表合并） | string\|RegExp\|array | `/\$i8n$/`、`/require$/`、`/\$\$i8n$/`、`/console\.log/`、`/\$t$/` |
 
 ### }
 ```
@@ -476,11 +477,30 @@ $$i8n('需求') // 需求
 
 ##### 被动绕过
 
-插件针对以下方法绕过了扫描，也就是被以下方法包裹的内容，将不会被扫描到
+插件针对以下方法默认绕过了扫描，也就是被以下方法包裹的内容，将不会被扫描到
 
 ```
-$i8n`, `$$i8n`, `console.log`, `$t
+$i8n`, `$$i8n`, `console.log`, `$t`, `require`
 ```
+
+除此之外，还可以通过配置 `excludedCall` 自定义需要排除的方法（与默认排除列表**合并**，而非覆盖）：
+
+- **类型：** `string | RegExp | Array<string | RegExp>`
+- **说明：** 每一项会被当作正则表达式去匹配完整的调用方法名（支持多级命名空间，如 `xxx.yyy.zzz`）
+- **示例：**
+
+```javascript
+const i18nConfig = {
+    // 其他配置...
+    excludedCall: [
+        /Vue\.\$message$/,   // 排除 Vue.$message('中文')
+        'MessageBox\\.',     // 字符串形式，排除 MessageBox.alert('中文') 等
+        /^alert$/,           // 排除 alert('中文')
+    ]
+}
+```
+
+> 注：插件会在传递配置时保留正则表达式的匹配内容和标志位，并在扫描时恢复；字符串形式的规则也会自动转换为 `RegExp` 对象，因此字符串和正则字面量均可使用。
 
 ### 备注
 

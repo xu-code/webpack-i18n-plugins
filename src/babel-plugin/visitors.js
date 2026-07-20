@@ -6,6 +6,34 @@ const babelUtils = require("./utils");
 const ora = require("ora");
 const myOra = ora();
 
+/**
+ * 获取最终的 excludedCall 列表（默认配置 + 用户自定义配置）
+ * 用户配置通过 process.env.i18nOptions 传递，字符串会转换为 RegExp，
+ * 正则表达式则通过序列化后的 source 和 flags 恢复
+ * @returns {RegExp[]}
+ */
+const getExcludedCall = function () {
+  const userExcludedCall = utils.getOptions("excludedCall") || [];
+  const userList = (Array.isArray(userExcludedCall) ? userExcludedCall : [userExcludedCall]).map((item) => {
+    if (item instanceof RegExp) {
+      return item;
+    }
+    try {
+      if (typeof item === "string") {
+        return new RegExp(item);
+      }
+      if (item && item.__webpackI18nRegExp === true && typeof item.source === "string") {
+        return new RegExp(item.source, item.flags || "");
+      }
+      throw new TypeError("仅支持字符串或正则表达式");
+    } catch (error) {
+      myOra.warn("excludedCall 配置项 " + item + " 不是有效的正则表达式，已忽略");
+      return null;
+    }
+  }).filter(Boolean);
+  return options.excludedCall.concat(userList);
+};
+
 module.exports.StringLiteral = function (path) {
   let { node } = path;
   let excludedReg = new RegExp(options.excludedPattern);
@@ -14,7 +42,7 @@ module.exports.StringLiteral = function (path) {
   if (utils.isChinese(value) && !excludedReg.test(value)) {
     let parentNode = path.parent;
     let callName = babelUtils.getCallExpressionName(parentNode);
-    const isExclude = options.excludedCall.some(item => {
+    const isExclude = getExcludedCall().some(item => {
         return item.test(callName)
     })
     let ignoreExpression = types.isImportDeclaration(parentNode) || parentNode.key === node || (types.isCallExpression(parentNode) && isExclude);
@@ -64,10 +92,10 @@ module.exports.TemplateElement = function (path) {
         callName = babelUtils.getCallExpressionName(grandParentPath.node);
       }
     }
-    const isExclude = options.excludedCall.some(item => {
+    const isExclude = getExcludedCall().some(item => {
       return item.test(callName)
   })
-    let ignoreExpression = types.isCallExpression(parentNode) && isExclude;
+    let ignoreExpression = types.isCallExpression(parentPath.parentPath.node) && isExclude;
 
     if (!ignoreExpression) {
       let tplStr = `\${${babelUtils.genAIExpression(value)}}`;

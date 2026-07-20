@@ -4,10 +4,24 @@ const i18nUtils = require("./babel-plugin/utils");
 const ConcatSource = require("webpack-sources").ConcatSource;
 // const polyfilePath = require.resolve("./collector/polyfill.js");
 const polyfilePath = path.resolve(__dirname, "./collector/polyfill.mjs");
+
+const serializeOptions = function (config) {
+  return JSON.stringify(config || {}, (key, value) => {
+    if (value instanceof RegExp) {
+      return {
+        __webpackI18nRegExp: true,
+        source: value.source,
+        flags: value.flags,
+      };
+    }
+    return value;
+  });
+};
+
 class i18nPlugin {
   constructor(config) {
     this.i18nConfig = config;
-    process.env.i18nOptions = JSON.stringify(config)
+    process.env.i18nOptions = serializeOptions(config);
   }
   apply(compiler) {
     
